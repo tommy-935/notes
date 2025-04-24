@@ -1,0 +1,76 @@
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+      - "8081:8081"
+      - "8082:8082"
+      - "443:443"
+    volumes:
+      - /mnt/hgfs/www:/var/www/html
+    depends_on:
+      - php
+      - php74
+    networks: 
+      - appnet
+
+  php:
+    container_name: php82
+    build:
+      context: ./php
+    volumes:
+      - /mnt/hgfs/www:/var/www/html
+      - ./php/php.ini:/etc/php/8.2/fpm/php.ini
+    networks: 
+      - appnet
+
+  php74:
+    container_name: php74
+    build:
+      context: ./php74
+    volumes: 
+      - /mnt/hgfs/www:/var/www/html
+    networks:
+      - appnet
+
+  mysql:
+    container_name: mysql8
+    build:
+      context: ./mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: 123456
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # - ./mysql/my.cnf:/etc/my.cnf
+      # - ./mysql/mysqld.cnf:/etc/mysql/conf.d/my.cnf
+    #  - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    # command: [
+    #   "--skip-chown"  # 关键：禁止容器修改文件所有权
+    # ]
+    ports:
+      - "3306:3306"
+    networks: 
+      - appnet
+
+  redis:
+    container_name: redis
+    build: ./redis
+    ports:
+      - "6379:6379"
+    networks:
+      - appnet
+  
+volumes:
+  mysql_data:
+
+networks:
+  appnet:
+
+# /etc/fstab
+# .host:/data/mysql /mnt/hgfs/data/mysql vmhgfs defaults,uid=999,gid=999,fmask=007,dmask=007 0 0
+# docker run --name mysql8 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test -e MYSQL_USER=appuser -e MYSQL_PASSWORD=123456 -v /data/mysql:/var/lib/mysql -v ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql mysql:8.0.26

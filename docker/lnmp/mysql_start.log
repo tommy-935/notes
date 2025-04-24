@@ -1,0 +1,4 @@
+ Container mysql8  Recreate
+ Container mysql8  Recreated
+Attaching to mysql8
+[Kmysql8 exited with code 1

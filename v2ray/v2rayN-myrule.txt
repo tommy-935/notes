@@ -1,0 +1,10 @@
+regexp:.*google.*,
+regexp:.*shopify.*,
+youtube.com,
+twitter.com,
+shopifysvc.com,
+regexp:.*fbcdn.*,
+regexp:.*facebook\..*,
+v2fly.org,
+regexp:.*rubygems.*,
+regexp:.*ngrok.*

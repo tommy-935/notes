@@ -1,0 +1,23 @@
+FROM ubuntu:24.04
+
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install MySQL Server
+RUN apt-get update && apt-get install -y mysql-server \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy initialization script
+COPY init.sql /docker-entrypoint-initdb.d/
+
+# Configure MySQL
+RUN mkdir -p /var/run/mysqld \
+    && chown -R mysql:mysql /var/run/mysqld \
+    && chmod 777 /var/run/mysqld
+
+# Expose MySQL port
+EXPOSE 3306
+
+# Start MySQL
+CMD ["mysqld", "--bind-address=0.0.0.0", "--console"]
