@@ -1,0 +1,73 @@
+services:
+  galera1:
+    build: ./galera
+    container_name: galera1
+    hostname: galera1
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - data1:/var/lib/mysql
+      - ./galera/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      galera_net:
+        ipv4_address: 172.28.0.11
+
+  galera2:
+    build: ./galera
+    container_name: galera2
+    hostname: galera2
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - data2:/var/lib/mysql
+      - ./galera/init.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - galera1
+    networks:
+      galera_net:
+        ipv4_address: 172.28.0.12
+
+  galera3:
+    build: ./galera
+    container_name: galera3
+    hostname: galera3
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - data3:/var/lib/mysql
+      - ./galera/init.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      - galera1
+    networks:
+      galera_net:
+        ipv4_address: 172.28.0.13
+
+  haproxy:
+    # image: haproxy:latest
+    container_name: haproxy
+    build:
+      context: .
+      dockerfile: Dockerfile.haproxy
+    ports:
+      - "3309:3309"
+    # volumes:
+    #  - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - galera1
+      - galera2
+      - galera3
+    networks:
+      galera_net:
+        ipv4_address: 172.28.0.14
+
+networks:
+  galera_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  data1:
+  data2:
+  data3:

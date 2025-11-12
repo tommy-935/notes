@@ -35,3 +35,35 @@
  4. php-example 解决 本地ssl验证
   E:\www\node-dev\page-builder\web\vendor\shopify\shopify-api\src\Clients\HttpClientFactory.php
   return new Client(['verify' => false, 'proxy' => 'http://127.0.0.1:10809']);
+
+2. 发布remix app
+  init:
+  修改.env 需要 SHOPIFY_APP_URL / SHOPIFY_API_KEY / SHOPIFY_API_SECRET
+  npm install
+  npm run setup (database migrate)
+  npm run build:prod
+
+  run:
+  pm2 satrt npm --name checkout-app -- run start
+
+  stop:
+  pm2 stop checkout-app
+
+3. 发布extension
+  shopify app deploy (需本地浏览器登录)
+
+  不用浏览器登录方式（SSH)
+  export SHOPIFY_CLI_PARTNERS_TOKEN=atkn_83740e0f4c8xxxxx  (partner平台获取)
+  shopify app deploy --force 
+  deploy.sh 内容如下：可实现不同环境部署
+    #!/bin/bash
+    ENV=$1
+    if [ -z "$ENV" ]; then
+        echo "Usage: ./deploy.sh [dev|test|prod]"
+        exit 1
+    fi 
+    cp "shopify.app.$ENV.toml" shopify.app.toml
+    echo "Deploying to $ENV ..."
+    shopify app deploy --force
+
+4. 

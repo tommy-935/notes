@@ -1,0 +1,18 @@
+FROM debian:bookworm-slim
+
+# LABEL maintainer="yourname"
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装 haproxy 和常用网络调试工具
+RUN apt-get update && \
+    apt-get install -y haproxy netcat-openbsd iputils-ping telnet curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 复制配置文件
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+
+# 暴露 MySQL 代理端口
+EXPOSE 3309
+
+# 启动命令
+CMD ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg", "-db"]

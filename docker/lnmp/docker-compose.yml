@@ -32,6 +32,7 @@ services:
       context: ./php74
     volumes: 
       - /mnt/hgfs/www:/var/www/html
+      - ./php74/php.ini:/usr/local/etc/php/php.ini
     networks:
       - appnet
 
@@ -45,6 +46,7 @@ services:
       MYSQL_USER: appuser
       MYSQL_PASSWORD: 123456
     volumes:
+      - /mnt/hgfs/www:/www
       - mysql_data:/var/lib/mysql
       # - ./mysql/my.cnf:/etc/my.cnf
       # - ./mysql/mysqld.cnf:/etc/mysql/conf.d/my.cnf
@@ -64,9 +66,31 @@ services:
       - "6379:6379"
     networks:
       - appnet
+
+  mongo:
+    container_name: mongo
+    build: ./mongo
+    ports:
+      - "27017:27017"
+    environment:
+      # 如果在这里创建了root 在init-mongo.js就不要重复创建了
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: tb_migration_prod
+    command: ["mongod", "--replSet", "tb-migration", "--keyFile", "/etc/mongo-keyfile"] # 添加了 command: ["mongod", "--replSet", "tb-migration"] 表示启动时以副本集名 tb-migration 启动。
+    volumes:
+      - mongo_data:/data/db
+      # 如果你有初始化脚本可以加上这一行：
+      # - ./mongo/mongo-keyfile:/etc/mongo-keyfile:ro
+      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./mongo/init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro
+    networks:
+      - appnet
+    entrypoint: ["/usr/local/bin/custom-entrypoint.sh"]
   
 volumes:
   mysql_data:
+  mongo_data:
 
 networks:
   appnet:
